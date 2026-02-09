@@ -7,6 +7,8 @@ namespace BookStore.Application.Mappers
     {
         public static BookOnlyResponse ToBookOnlyBookResponse(this Book book)
         {
+            ArgumentNullException.ThrowIfNull(book);
+
             return new BookOnlyResponse
             (
                 Id: book.Id.Value,
@@ -17,6 +19,8 @@ namespace BookStore.Application.Mappers
         
         public static BookWithAuthorResponse ToBookWithAuthorResponse(this Book book)
         {
+            ArgumentNullException.ThrowIfNull(book);
+
             return new BookWithAuthorResponse
             (
                 Id: book.Id.Value,

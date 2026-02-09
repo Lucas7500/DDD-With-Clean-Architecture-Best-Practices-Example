@@ -7,6 +7,8 @@ namespace BookStore.Application.Mappers
     {
         public static AuthorResponse ToResponse(this Author author)
         {
+            ArgumentNullException.ThrowIfNull(author);
+
             return new AuthorResponse(
                 Id: author.Id.Value,
                 Name: author.Name);
