@@ -69,7 +69,7 @@ namespace BookStore.Tests.MSTest.ApplicationTests.UseCasesTests.Authors.UsingMoq
             ErrorOr<AddAuthorResponse> result = await useCase.ExecuteAsync(request);
 
             Assert.IsTrue(result.IsError);
-            Assert.AreEqual(1, result.Errors.Count);
+            Assert.HasCount(1, result.Errors);
             Assert.AreEqual(ErrorType.Validation, result.FirstError.Type);
             Assert.AreEqual(invalidValidationResult.ToString(), result.FirstError.Description);
 
@@ -94,7 +94,7 @@ namespace BookStore.Tests.MSTest.ApplicationTests.UseCasesTests.Authors.UsingMoq
             ErrorOr<AddAuthorResponse> result = await useCase.ExecuteAsync(request);
 
             Assert.IsTrue(result.IsError);
-            Assert.AreEqual(1, result.Errors.Count);
+            Assert.HasCount(1, result.Errors);
             Assert.AreEqual(ErrorType.Failure, result.FirstError.Type);
             Assert.AreEqual("An error occurred while adding the author: repository failure", result.FirstError.Description);
 

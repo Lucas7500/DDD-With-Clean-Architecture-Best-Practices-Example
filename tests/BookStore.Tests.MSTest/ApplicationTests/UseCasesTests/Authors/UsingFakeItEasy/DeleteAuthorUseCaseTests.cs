@@ -57,7 +57,7 @@ namespace BookStore.Tests.MSTest.ApplicationTests.UseCasesTests.Authors.UsingFak
             ErrorOr<DeleteAuthorResponse> result = await useCase.ExecuteAsync(authorId);
 
             Assert.IsTrue(result.IsError);
-            Assert.AreEqual(1, result.Errors.Count);
+            Assert.HasCount(1, result.Errors);
             Assert.AreEqual(ErrorType.NotFound, result.FirstError.Type);
             Assert.AreEqual("The author with the specified Id was not found.", result.FirstError.Description);
 
@@ -80,7 +80,7 @@ namespace BookStore.Tests.MSTest.ApplicationTests.UseCasesTests.Authors.UsingFak
             ErrorOr<DeleteAuthorResponse> result = await useCase.ExecuteAsync(authorId);
 
             Assert.IsTrue(result.IsError);
-            Assert.AreEqual(1, result.Errors.Count);
+            Assert.HasCount(1, result.Errors);
             Assert.AreEqual(ErrorType.Failure, result.FirstError.Type);
             Assert.AreEqual("An error occurred while deleting the author: repository failure", result.FirstError.Description);
 
