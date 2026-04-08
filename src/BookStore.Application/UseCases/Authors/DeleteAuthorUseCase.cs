@@ -11,15 +11,15 @@ namespace BookStore.Application.UseCases.Authors
     {
         public async Task<ErrorOr<DeleteAuthorResponse>> ExecuteAsync(AuthorId request, CancellationToken cancellationToken = default)
         {
+            Author? author = await unitOfWork.AuthorsRepository.GetByIdAsync(request, cancellationToken);
+
+            if (author is null)
+            {
+                return Error.NotFound(description: "The author with the specified Id was not found.");
+            }
+
             try
             {
-                Author? author = await unitOfWork.AuthorsRepository.GetByIdAsync(request, cancellationToken);
-
-                if (author is null)
-                {
-                    return Error.NotFound(description: "The author with the specified Id was not found.");
-                }
-
                 await unitOfWork.AuthorsRepository.DeleteAsync(author, cancellationToken);
                 await unitOfWork.CommitAsync(cancellationToken);
 
