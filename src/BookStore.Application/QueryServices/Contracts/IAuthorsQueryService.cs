@@ -7,7 +7,7 @@ namespace BookStore.Application.QueryServices.Contracts
 {
     public interface IAuthorsQueryService
     {
-        Task<PagedResult<AuthorResponse>> GetAllAsync(QueryRequest request, CancellationToken cancellationToken = default);
+        Task<PagedResult<AuthorResponse>> GetAllAsync(QueryRequest request, CancellationToken ct = default);
         Task<AuthorResponse?> GetByIdAsync(AuthorId id, CancellationToken ct = default);
         Task<long> CountAsync(CancellationToken ct = default);
     }
