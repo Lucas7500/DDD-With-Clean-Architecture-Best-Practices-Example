@@ -14,17 +14,17 @@ namespace BookStore.Application.UseCases.Authors
     {
         public async Task<ErrorOr<AddAuthorResponse>> ExecuteAsync(AddAuthorRequest request, CancellationToken cancellationToken = default)
         {
+            ValidationResult validationResult = await requestValidator.ValidateAsync(request, cancellationToken);
+
+            if (!validationResult.IsValid)
+            {
+                return Error.Validation(description: validationResult.ToString());
+            }
+
+            Author newAuthor = new(request.Name);
+
             try
             {
-                ValidationResult validationResult = await requestValidator.ValidateAsync(request, cancellationToken);
-
-                if (!validationResult.IsValid)
-                {
-                    return Error.Validation(description: validationResult.ToString());
-                }
-
-                Author newAuthor = new(request.Name);
-
                 await unitOfWork.AuthorsRepository.AddAsync(newAuthor, cancellationToken);
                 await unitOfWork.CommitAsync(cancellationToken);
 
