@@ -43,6 +43,9 @@
 
   <ItemGroup>
     <Folder Include="ApiTests\" />
+    <Folder Include="ApplicationTests\UseCasesTests\Books\UsingFakeItEasy\" />
+    <Folder Include="ApplicationTests\UseCasesTests\Books\UsingMoq\" />
+    <Folder Include="ApplicationTests\UseCasesTests\Books\UsingNSubstitute\" />
     <Folder Include="InfrastructureTests\" />
   </ItemGroup>
 
