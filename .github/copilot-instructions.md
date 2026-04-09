@@ -13,7 +13,7 @@
 - **Injeção de Dependências:** O projeto adota a injeção nas ações (métodos) do controller usando o atributo `[FromServices]` em vez de no construtor.
 - **Tipos de Retorno Seguros:** As respostas devem retornar `IActionResult` através de métodos auxiliares como `OkOrBadRequest(result)`, processando wrappers da biblioteca `ErrorOr`.
 - **Modificadores:** Preferencialmente use o modificador `sealed` em todos os controllers e implementações.
-- **Isolamento Constritivo:** Utilize Strongly Typed IDs (ex: `AuthorId`) como passo inicial a partir de um `Guid` nativo nos endpoitns.
+- **Isolamento Constritivo:** Utilize Strongly Typed IDs (ex: `AuthorId`) como passo inicial a partir de um `Guid` nativo nos endpoints.
 
 ### 2. `BookStore.Domain`
 - **Modelação Estrutural:** Os modelos de domínio formam raízes de agregação (Aggregate Roots), geralmente herdando da classe base `AggregateRoot<TId, TKey>` e utilizando as abstrações `Entity`.
@@ -36,3 +36,4 @@
 - **Mocking Libraries:** Os testes na solution abordam múltiplas frameworks de Isolamento (Moq, NSubstitute, FakeItEasy) isoladas em escopos/namespaces diferentes para fins didáticos/exemplificação.
 - **xUnit Guidelines:** Dependências privadas devem ser inicializadas no construtor da classe de testes. Testes frequentemente agrupados usando classes aninhadas (Nested Classes), como em `public sealed class UsingStandardAssertions`.
 - **MSTest Guidelines:** Instâncias privadas nas classes costumam ser atribuídas com o supressor default `= null!`, com a instanciação ocorrendo dentro do método anotado com `[TestInitialize]`.
+- **Métodos Privados Auxiliares:** Métodos privados auxiliares em classes de extensão devem ficar ao final da classe.
