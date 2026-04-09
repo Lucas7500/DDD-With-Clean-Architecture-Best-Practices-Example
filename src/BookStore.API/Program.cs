@@ -16,6 +16,7 @@ builder.Services.AddApiVersioningConfiguration();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerConfiguration();
 builder.Services.AddRoutingAdditionalConfiguration();
+builder.Services.AddCorsConfiguration(builder.Configuration);
 builder.Services.AddRateLimiterConfiguration(builder.Configuration);
 
 WebApplication app = builder.Build();
@@ -23,9 +24,14 @@ WebApplication app = builder.Build();
 app.RunDatabaseMigrations();
 app.UseSwaggerInDevelopment();
 app.UseHttpsRedirection();
+app.UseCors();
 app.UseRateLimiter();
 app.UseAuthorization();
-app.MapControllers().RequireFixedWindowRateLimiting();
+
+app.MapControllers()
+    .RequireCorsPolicy()
+    .RequireFixedWindowRateLimiting();
+
 app.AddExceptionHandler();
 
 await app.RunAsync();

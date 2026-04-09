@@ -9,7 +9,29 @@ namespace BookStore.API.Extensions
 {
     internal static class ApplicationExtensions
     {
+        private const string CorsPolicyName = "cors-policy";
         private const string FixedWindowPolicyName = "fixed-window";
+
+        internal static void AddCorsConfiguration(this IServiceCollection services, IConfiguration configuration)
+        {
+            string[] allowedOrigins = configuration
+                .GetSection("Cors:AllowedOrigins")
+                .Get<string[]>() ?? [];
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy(CorsPolicyName, policyBuilder =>
+                {
+                    if (allowedOrigins.Length is 0)
+                        throw new InvalidOperationException("CORS origins must be configured in production.");
+
+                    policyBuilder
+                        .WithOrigins(allowedOrigins)
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
+                });
+            });
+        }
 
         internal static void AddRateLimiterConfiguration(this IServiceCollection services, IConfiguration configuration)
         {
@@ -161,6 +183,11 @@ namespace BookStore.API.Extensions
         internal static IEndpointConventionBuilder RequireFixedWindowRateLimiting(this IEndpointConventionBuilder builder)
         {
             return builder.RequireRateLimiting(FixedWindowPolicyName);
+        }
+
+        internal static IEndpointConventionBuilder RequireCorsPolicy(this IEndpointConventionBuilder builder)
+        {
+            return builder.RequireCors(CorsPolicyName);
         }
 
         private static string GetClientIpAddress(HttpContext httpContext)
