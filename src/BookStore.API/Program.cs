@@ -16,14 +16,16 @@ builder.Services.AddApiVersioningConfiguration();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerConfiguration();
 builder.Services.AddRoutingAdditionalConfiguration();
+builder.Services.AddRateLimiterConfiguration(builder.Configuration);
 
 WebApplication app = builder.Build();
 
 app.RunDatabaseMigrations();
 app.UseSwaggerInDevelopment();
 app.UseHttpsRedirection();
+app.UseRateLimiter();
 app.UseAuthorization();
-app.MapControllers();
+app.MapControllers().RequireFixedWindowRateLimiting();
 app.AddExceptionHandler();
 
 await app.RunAsync();

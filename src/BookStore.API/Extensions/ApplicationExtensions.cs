@@ -3,11 +3,60 @@ using BookStore.Domain.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi;
+using System.Threading.RateLimiting;
 
 namespace BookStore.API.Extensions
 {
     internal static class ApplicationExtensions
     {
+        private const string FixedWindowPolicyName = "fixed-window";
+
+        internal static void AddRateLimiterConfiguration(this IServiceCollection services, IConfiguration configuration)
+        {
+            int permitLimit = configuration.GetValue("RateLimiting:FixedWindow:PermitLimit", 100);
+            int windowInSeconds = configuration.GetValue("RateLimiting:FixedWindow:WindowInSeconds", 60);
+            int queueLimit = configuration.GetValue("RateLimiting:FixedWindow:QueueLimit", 0);
+
+            services.AddRateLimiter(options =>
+            {
+                options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+                options.AddPolicy(FixedWindowPolicyName, httpContext =>
+                {
+                    string clientIp = GetClientIpAddress(httpContext);
+
+                    return RateLimitPartition.GetFixedWindowLimiter(
+                        partitionKey: clientIp,
+                        factory: _ => new FixedWindowRateLimiterOptions
+                        {
+                            PermitLimit = permitLimit,
+                            Window = TimeSpan.FromSeconds(windowInSeconds),
+                            QueueLimit = queueLimit,
+                            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                            AutoReplenishment = true
+                        });
+                });
+
+                options.OnRejected = async (context, cancellationToken) =>
+                {
+                    context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+
+                    ProblemDetails problemDetails = new()
+                    {
+                        Status = StatusCodes.Status429TooManyRequests,
+                        Title = "Too Many Requests",
+                        Type = "https://tools.ietf.org/html/rfc6585#section-4",
+                        Detail = "Rate limit exceeded. Try again later.",
+                        Instance = context.HttpContext.Request.Path,
+                    };
+
+                    problemDetails.Extensions["traceId"] = context.HttpContext.TraceIdentifier;
+
+                    await context.HttpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
+                };
+            });
+        }
+
         internal static void AddApiVersioningConfiguration(this IServiceCollection services)
         {
             services.AddApiVersioning(options =>
@@ -67,7 +116,7 @@ namespace BookStore.API.Extensions
                     Exception? exception = context.Features
                         .Get<IExceptionHandlerFeature>()?.Error;
 
-                    if (exception is null) 
+                    if (exception is null)
                         return;
 
                     (int status, string title, string type) = exception switch
@@ -107,6 +156,21 @@ namespace BookStore.API.Extensions
                     await context.Response.WriteAsJsonAsync(problemDetails);
                 });
             });
+        }
+
+        internal static IEndpointConventionBuilder RequireFixedWindowRateLimiting(this IEndpointConventionBuilder builder)
+        {
+            return builder.RequireRateLimiting(FixedWindowPolicyName);
+        }
+
+        private static string GetClientIpAddress(HttpContext httpContext)
+        {
+            string? forwardedFor = httpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+
+            if (!string.IsNullOrWhiteSpace(forwardedFor))
+                return forwardedFor.Split(',')[0].Trim();
+
+            return httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
         }
     }
 }
